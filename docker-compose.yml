@@ -1,0 +1,57 @@
+version: "3"
+services:
+  db:
+    build: ./mysql
+    restart: always
+    environment:
+      MYSQL_USER: "content_gen_socmed"
+      MYSQL_PASSWORD: "kLSmgXd1Y85MCuLepMml"
+
+      MYSQL_ROOT_HOST: "127.0.0.1"
+      MYSQL_ROOT_PASSWORD: "ZxauB5WUe2afJeZ39huT"
+      TZ: "Asia/Tehran"
+
+    ports:
+      - 3306:3306
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - /var/run/mysqld:/var/run/mysqld
+
+  main_website:
+    build: ./content_gen_socmed/
+    network_mode: "host"
+    restart: always
+
+    environment:
+      FLASK_DEBUG: ${FLASK_DEBUG}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: 3306
+
+      SCRIPT_PATH: ${SCRIPT_PATH}
+
+      VERSION_NUMBER: ${VERSION_NUMBER}
+      TZ: "Asia/Tehran"
+      TIMEZONE: "Asia/Tehran"
+
+    depends_on:
+      - db
+
+  nginx:
+    build: ./nginx
+    restart: always
+    network_mode: "host"
+    volumes:
+      - ./content_gen_socmed/static:/static
+    ports:
+      - 80:80
+    depends_on:
+      - main_website
+
+volumes:
+  mysql_data:
+  
